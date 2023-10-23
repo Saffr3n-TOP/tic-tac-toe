@@ -9,26 +9,18 @@
   </head>
   <body>
     <h1>Tic Tac Toe</h1>
+
+    <div class="info">
+      <span>X</span>
+      <span class="score"
+        ><span class="score-x">0</span> : <span class="score-o">0</span></span
+      >
+      <span>O</span>
+    </div>
+
     <div class="gameboard"></div>
 
-    <div class="controls">
-      <div class="player-one">
-        <h2>Player 1</h2>
-        <label for="player-one">
-          Name:
-          <input type="text" name="player-one" id="player-one" />
-        </label>
-      </div>
-
-      <div class="player-two">
-        <h2>Player 2</h2>
-        <label for="player-two">
-          Name:
-          <input type="text" name="player-two" id="player-two" />
-        </label>
-      </div>
-
-      <button type="button" class="start-btn">START</button>
-    </div>
+    <button type="button" class="start-btn">START</button>
+    <button type="button" class="reload-btn">RELOAD</button>
   </body>
 </html>
