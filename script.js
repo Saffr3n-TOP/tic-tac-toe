@@ -71,12 +71,14 @@ const Gameboard = (() => {
   };
 })();
 
-/**
- * @param {string} name
- * @param {string} mark
- */
-const Player = (name, mark) => {
-  return { name, mark };
+/** @param {string} mark */
+const Player = (mark) => {
+  let score = 0;
+
+  const getScore = () => score;
+  const addScore = () => score++;
+
+  return { mark, getScore, addScore };
 };
 
 ((gameboard) => {
@@ -91,3 +93,119 @@ const Player = (name, mark) => {
     gameboardEl.appendChild(cellEl);
   }
 })(Gameboard.get());
+
+(() => {
+  let gamesPlayed = 0;
+
+  const infoEl = /** @type {HTMLDivElement} */ (
+    document.querySelector('.info')
+  );
+  const startBtn = /** @type {HTMLButtonElement} */ (
+    document.querySelector('.start-btn')
+  );
+  const reloadBtn = /** @type {HTMLButtonElement} */ (
+    document.querySelector('.reload-btn')
+  );
+
+  const playerX = Player('X');
+  const playerO = Player('O');
+
+  const playRound = () => {
+    let movesMade = 0;
+
+    /** @type {NodeListOf<HTMLDivElement>} */
+    const cellEls = document.querySelectorAll('.cell');
+    const xEl = /** @type {HTMLSpanElement} */ (infoEl.firstElementChild);
+    const oEl = /** @type {HTMLSpanElement} */ (infoEl.lastElementChild);
+
+    const playerOne = gamesPlayed % 2 ? playerO : playerX;
+    const playerTwo = gamesPlayed % 2 ? playerX : playerO;
+
+    /** @param {MouseEvent} e */
+    const cellClickHandler = (e) => {
+      const cellEl = /** @type {HTMLDivElement} */ (e.currentTarget);
+      const cellElIndexAttr = cellEl.getAttribute('data-index');
+
+      if (!cellElIndexAttr) return;
+
+      const cellIndex = +cellElIndexAttr;
+
+      if (Gameboard.getCell(cellIndex)) return;
+
+      const mark = movesMade % 2 ? playerTwo.mark : playerOne.mark;
+
+      if (xEl.textContent === mark) {
+        xEl.style.color = 'inherit';
+        oEl.style.color = 'orange';
+      } else {
+        xEl.style.color = 'orange';
+        oEl.style.color = 'inherit';
+      }
+
+      Gameboard.setCell(cellIndex, mark);
+      cellEl.textContent = mark;
+      movesMade++;
+
+      if (Gameboard.gameIsOver()) {
+        const winner = Gameboard.getWinner();
+
+        xEl.style.color = 'inherit';
+        oEl.style.color = 'inherit';
+
+        cellEls.forEach((el) => {
+          el.classList.remove('clickable');
+          el.removeEventListener('click', cellClickHandler);
+
+          startBtn.disabled = false;
+        });
+
+        gamesPlayed++;
+
+        if (!winner) return;
+
+        const playerXScoreEl = /** @type {HTMLSpanElement} */ (
+          document.querySelector('.score-x')
+        );
+        const playerOScoreEl = /** @type {HTMLSpanElement} */ (
+          document.querySelector('.score-o')
+        );
+
+        if (winner.mark === playerX.mark) playerX.addScore();
+        if (winner.mark === playerO.mark) playerO.addScore();
+
+        playerXScoreEl.textContent = playerX.getScore().toString();
+        playerXScoreEl.style.color =
+          playerX.getScore() > playerO.getScore() ? 'lime' : 'inherit';
+
+        playerOScoreEl.textContent = playerO.getScore().toString();
+        playerOScoreEl.style.color =
+          playerO.getScore() > playerX.getScore() ? 'lime' : 'inherit';
+      }
+    };
+
+    if (gamesPlayed % 2) {
+      xEl.style.color = 'inherit';
+      oEl.style.color = 'orange';
+    } else {
+      xEl.style.color = 'orange';
+      oEl.style.color = 'inherit';
+    }
+
+    Gameboard.reset();
+
+    cellEls.forEach((el) => {
+      el.classList.add('clickable');
+      el.addEventListener('click', cellClickHandler);
+      el.textContent = '';
+    });
+  };
+
+  startBtn.addEventListener('click', () => {
+    startBtn.disabled = true;
+    playRound();
+  });
+
+  reloadBtn.addEventListener('click', () => {
+    window.location.reload();
+  });
+})();
